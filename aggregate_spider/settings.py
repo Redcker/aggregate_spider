@@ -64,7 +64,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'aggregate_spider.pipelines.ZongHengPineline': 300,
+    'aggregate_spider.pipelines.WeiBoPipeline': 300,
+    'aggregate_spider.pipelines.ZongHengPipeline': 300,
     'aggregate_spider.pipelines.MaoYanPipeline': 300,
     'aggregate_spider.pipelines.DouBanPipeline': 300,
     'aggregate_spider.pipelines.WeReadPipeline': 300,

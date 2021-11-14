@@ -12,7 +12,7 @@ class ZonghengSpider(scrapy.Spider):
 
     custom_settings = {
         'ITEM_PIPELINES': {
-            'aggregate_spider.pipelines.ZongHengPineline': 300
+            'aggregate_spider.pipelines.ZongHengPipeline': 300
         }
     }
 

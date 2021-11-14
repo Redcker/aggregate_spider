@@ -66,5 +66,11 @@ class MovieRankItem(scrapy.Item):
     produce_location = scrapy.Field()
     expected_count = scrapy.Field()
 
-
+class WeiBoItem(scrapy.Item):
+    rank_type = scrapy.Field()
+    id = scrapy.Field()
+    rank = scrapy.Field()
+    title = scrapy.Field()
+    tag = scrapy.Field()
+    mark = scrapy.Field()
 

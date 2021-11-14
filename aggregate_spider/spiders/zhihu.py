@@ -21,6 +21,13 @@ class ZhiHuSpider(scrapy.Spider):
             'aggregate_spider.pipelines.ZhiHuPipeline': 300
         }
     }
+    custom_headers = {
+        "Referer": "https://www.zhihu.com/"
+    }
+
+    def start_requests(self):
+        for url in self.start_urls:
+            yield scrapy.Request(url=url, headers=self.custom_headers)
 
     def parse(self, response):
         if response.url.endswith("billboard"):  # 热榜

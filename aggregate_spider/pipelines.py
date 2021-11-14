@@ -92,7 +92,7 @@ class QiDianPipeline:
             self.col.insert(data)
         if self.origin_items:
             _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
-            redis_connection.set('qidian', str(_data['data']), ex=60 * 60 * 2)  # 将数据存在redis
+            redis_connection.set('qidian', str(_data['data']), ex=60 * 60 * 2 + 60)  # 将数据存在redis
 
 
 class WeReadPipeline:
@@ -125,7 +125,7 @@ class WeReadPipeline:
         if self.origin_items:
             _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
             # redis_connection.delete('weread')
-            redis_connection.set('weread', str(_data['data']), ex=60 * 60 * 2)  # 将数据存在redis
+            redis_connection.set('weread', str(_data['data']), ex=60 * 60 * 2 + 60)  # 将数据存在redis
 
 
 class DouBanPipeline:
@@ -161,7 +161,7 @@ class DouBanPipeline:
         if self.origin_items:
             _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
             # redis_connection.delete('douban')
-            redis_connection.set('douban', str(_data['data']), ex=60 * 60)  # 将数据存在redis
+            redis_connection.set('douban', str(_data['data']), ex=60 * 60 * 2 + 60)  # 将数据存在redis
 
 
 class MaoYanPipeline:
@@ -199,10 +199,10 @@ class MaoYanPipeline:
         if self.origin_items:
             _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
             # redis_connection.delete('maoyan')
-            redis_connection.set('maoyan', str(_data['data']), ex=60 * 60)  # 将数据存在redis
+            redis_connection.set('maoyan', str(_data['data']), ex=60 * 60 * 2 + 60)  # 将数据存在redis
 
 
-class ZongHengPineline:
+class ZongHengPipeline:
     items = []
     origin_items = []
 
@@ -235,4 +235,40 @@ class ZongHengPineline:
         if self.origin_items:
             _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
             # redis_connection.delete('zongheng')
-            redis_connection.set('zongheng', str(_data['data']), ex=60 * 60 * 2)  # 将数据存在redis
+            redis_connection.set('zongheng', str(_data['data']), ex=60 * 60 * 2 + 60)  # 将数据存在redis
+
+
+class WeiBoPipeline:
+    items = []
+    origin_items = []
+
+    def __init__(self):
+        db = connection['composite']
+        self.col = db['weibo']
+
+    def process_item(self, item, spider):
+        pipeline_utils.clean_item(item)
+        if item.get('id'):
+            if not isinstance(item['id'], int):
+                item['id'] = item['id'].split('/')[-1]
+        else:
+            item['id'] = hashlib.md5(item['title'].encode()).hexdigest()
+        cache_key = 'weibo_' + str(item['id'])
+        if not redis_connection.get(cache_key):
+            redis_connection.set(cache_key, 1, ex=60 * 60 * 24 * 30 * 1)
+            _item = {
+                'id': item['id'],
+                'title': item['title'],
+                'rank_type': item['rank_type']
+            }
+            self.items.append((_item))
+        self.origin_items.append(copy.deepcopy(item))
+        return item
+
+    def close_spider(self, spider):
+        if self.items:
+            data = pipeline_utils.handle_items_by_rank_type(self.items)
+            self.col.insert(data)
+        if self.origin_items:
+            _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
+            redis_connection.set('weibo', str(_data['data']), ex=60 * 11)  # 将数据存在redis
