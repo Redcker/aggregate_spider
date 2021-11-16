@@ -1,7 +1,7 @@
 import scrapy
 from bs4 import BeautifulSoup
 import re
-from aggregate_spider.items import ZhiHuItem
+from aggregate_spider.items import PostItem
 
 
 class ZhiHuSpider(scrapy.Spider):
@@ -39,7 +39,7 @@ class ZhiHuSpider(scrapy.Spider):
             hot_list = eval(temp)
             for index, hot in enumerate(hot_list):
                 topic = hot['target']
-                item = ZhiHuItem()
+                item = PostItem()
                 item['rank_type'] = 'hot_top'
                 item['rank'] = index + 1
                 item['id'] = topic['link']['url']
@@ -53,7 +53,7 @@ class ZhiHuSpider(scrapy.Spider):
         elif response.url.endswith("topsearch"):  # 热搜
             topics = response.xpath("//div[@class='TopSearchMain-list']/div[@class='TopSearchMain-item']")
             for topic in topics:
-                item = ZhiHuItem()
+                item = PostItem()
                 item['rank_type'] = 'hot_search'
                 item['rank'] = topic.xpath("div[@class='TopSearchMain-index']/text()").get()
                 item['title'] = topic.xpath(
@@ -68,7 +68,7 @@ class ZhiHuSpider(scrapy.Spider):
             topics = eval(temp)
             for topic in topics:
                 target = topic['target']
-                item = ZhiHuItem()
+                item = PostItem()
                 item['rank_type'] = 'daily'
                 item['id'] = target['question']['id']
                 item['rank'] = topic['index'] + 1
@@ -93,7 +93,7 @@ class ZhiHuSpider(scrapy.Spider):
             topics = response.xpath(
                 "//div[@class='ContentRank-body']/div[@class='ZVideoCampaignVideo-videoList']/div[@class='ContentRank-contentCard']")
             for topic in topics:
-                item = ZhiHuItem()
+                item = PostItem()
                 item['rank_type'] = response.url.split('=')[1]
                 item['rank'] = topic.xpath("div[1]/text()").get()
                 item['id'] = topic.xpath("@href").get()

@@ -12,7 +12,7 @@ class AggregateSpiderItem(scrapy.Item):
     pass
 
 
-class ZhiHuItem(scrapy.Item):
+class PostItem(scrapy.Item):
     rank_type = scrapy.Field()
     id = scrapy.Field()
     rank = scrapy.Field()

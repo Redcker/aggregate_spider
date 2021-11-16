@@ -272,3 +272,114 @@ class WeiBoPipeline:
         if self.origin_items:
             _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
             redis_connection.set('weibo', str(_data['data']), ex=60 * 11)  # 将数据存在redis
+
+
+class YaoHuoPipeline:
+    items = []
+    origin_items = []
+    node_name = 'yaohuo'
+
+    def __init__(self):
+        db = connection['community']
+        self.col = db['yaohuo']
+
+    def process_item(self, item, spider):
+        pipeline_utils.clean_item(item)
+        if item.get('id'):
+            if not isinstance(item['id'], int):
+                item['id'] = item['id'].split('/')[-1]
+        else:
+            item['id'] = hashlib.md5(item['title'].encode()).hexdigest()
+        cache_key = f'{self.node_name}_' + str(item['id'])
+        if not redis_connection.get(cache_key):
+            redis_connection.set(cache_key, 1, ex=60 * 60 * 3)
+            _item = {
+                'id': item['id'],
+                'title': item['title'],
+                'rank_type': item['rank_type']
+            }
+            self.items.append((_item))
+        self.origin_items.append(copy.deepcopy(item))
+        return item
+
+    def close_spider(self, spider):
+        if self.items:
+            data = pipeline_utils.handle_items_by_rank_type(self.items)
+            self.col.insert(data)
+        if self.origin_items:
+            _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
+            redis_connection.set(f'{self.node_name}', str(_data['data']), ex=60 * 11)  # 将数据存在redis
+
+
+class HostLocPipeline:
+    items = []
+    origin_items = []
+    node_name = 'hostloc'
+
+    def __init__(self):
+        db = connection['community']
+        self.col = db['hostloc']
+
+    def process_item(self, item, spider):
+        pipeline_utils.clean_item(item)
+        if item.get('id'):
+            if not isinstance(item['id'], int):
+                item['id'] = item['id'].split('/')[-1]
+        else:
+            item['id'] = hashlib.md5(item['title'].encode()).hexdigest()
+        cache_key = f'{self.node_name}_' + str(item['id'])
+        if not redis_connection.get(cache_key):
+            redis_connection.set(cache_key, 1, ex=60 * 60 * 24 * 10) # 缓存10天
+            _item = {
+                'id': item['id'],
+                'title': item['title'],
+                'rank_type': item['rank_type']
+            }
+            self.items.append((_item))
+        self.origin_items.append(copy.deepcopy(item))
+        return item
+
+    def close_spider(self, spider):
+        if self.items:
+            data = pipeline_utils.handle_items_by_rank_type(self.items)
+            self.col.insert(data)
+        if self.origin_items:
+            _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
+            redis_connection.set(f'{self.node_name}', str(_data['data']), ex=60 * 60 * 3 + 60)  # 将数据存在redis
+
+
+class BiliBiliPipeline:
+    items = []
+    origin_items = []
+    node_name = 'bilibili'
+
+    def __init__(self):
+        db = connection['entertainment']
+        self.col = db[self.node_name]
+
+    def process_item(self, item, spider):
+        pipeline_utils.clean_item(item)
+        if item.get('id'):
+            if not isinstance(item['id'], int):
+                item['id'] = item['id'].split('/')[-1]
+        else:
+            item['id'] = hashlib.md5(item['title'].encode()).hexdigest()
+        cache_key = f'{self.node_name}_' + str(item['id'])
+        if not redis_connection.get(cache_key):
+            redis_connection.set(cache_key, 1, ex=60 * 60 * 24 * 10)
+            _item = {
+                'id': item['id'],
+                'title': item['title'],
+                'rank_type': item['rank_type']
+            }
+            self.items.append((_item))
+        self.origin_items.append(copy.deepcopy(item))
+        return item
+
+    def close_spider(self, spider):
+        if self.items:
+            data = pipeline_utils.handle_items_by_rank_type(self.items)
+            self.col.insert(data)
+        if self.origin_items:
+            _data = pipeline_utils.handle_items_by_rank_type(self.origin_items)
+            redis_connection.set(f'{self.node_name}', str(_data['data']), ex=60 * 11)  # 将数据存在redis

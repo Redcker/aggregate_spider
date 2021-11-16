@@ -31,7 +31,7 @@ class WeiboSpider(scrapy.Spider):
             tag = sel.xpath("td[3]/i/text()").get()
             mark = sel.xpath("td[2]/span/text()").get()
             rank = sel.xpath("td[1]/text()").get()
-            if rank and rank[0]:
+            if rank and '•' not in rank:
                 item['rank'] = rank
                 item['title'] = title
                 if tag:
